@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0c">
+<title>CS2 Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#0a0a0c;
+    --surface:#101013;
+    --surface-2:#16161a;
+    --surface-3:#1c1c21;
+    --line:rgba(255,255,255,.07);
+    --line-2:rgba(255,255,255,.12);
+    --text:#f4f4f5;
+    --dim:#a1a1aa;
+    --faint:#6b6b76;
+    --accent:#8b5cf6;
+    --accent-2:#a78bfa;
+    --accent-soft:rgba(139,92,246,.12);
+    --blue:#3b82f6;
+    --blue-soft:rgba(59,130,246,.14);
+    --good:#4ade80;
+    --bad:#f87171;
+    --gold:#fbbf24;
+    --r:12px;
+    --r-sm:9px;
+    --ease:cubic-bezier(.22,1,.36,1);
+    --maxw:1200px;
+  }
+  html,body{height:100%}
+  body{
+    font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+    background:var(--bg);color:var(--text);font-size:15px;line-height:1.5;
+    -webkit-font-smoothing:antialiased;font-feature-settings:"cv02","cv03","cv04";
+    min-height:100dvh;
+  }
+  .tnum{font-variant-numeric:tabular-nums}
+  a{color:inherit;text-decoration:none}
+  button{font-family:inherit;cursor:pointer}
+  [hidden]{display:none!important}
+  ::selection{background:var(--accent-soft)}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+  .num{font-variant-numeric:tabular-nums}
+
+  /* ---------- top nav ---------- */
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(10,10,12,.82);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+  .nav-in{max-width:var(--maxw);margin:0 auto;height:60px;display:flex;align-items:center;gap:26px;
+    padding:0 22px}
+  .logo{font-weight:800;font-size:16px;letter-spacing:.02em;display:flex;align-items:center;gap:1px;white-space:nowrap}
+  .logo b{color:var(--accent)}
+  .nav-links{display:flex;gap:4px;margin-left:8px}
+  .nav-links a{padding:8px 13px;border-radius:8px;color:var(--dim);font-size:14px;font-weight:500;
+    position:relative;transition:color .18s,background .18s}
+  .nav-links a:hover{color:var(--text);background:var(--surface-2)}
+  .nav-links a.active{color:var(--text)}
+  .nav-links a.active::after{content:"";position:absolute;left:13px;right:13px;bottom:-1px;height:2px;
+    background:var(--accent);border-radius:2px}
+  .nav-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .search{display:flex;align-items:center;gap:8px;background:var(--surface-2);border:1px solid var(--line);
+    border-radius:9px;padding:0 11px;height:36px;transition:border-color .18s;min-width:180px}
+  .search:focus-within{border-color:var(--line-2)}
+  .search svg{width:15px;height:15px;color:var(--faint);flex:none}
+  .search input{background:none;border:0;outline:none;color:var(--text);font-size:13.5px;width:100%}
+  .search input::placeholder{color:var(--faint)}
+  .btn{border:0;border-radius:9px;padding:9px 16px;font-size:14px;font-weight:600;letter-spacing:-.01em;
+    background:var(--accent);color:#fff;transition:transform .16s var(--ease),background .16s,opacity .16s}
+  .btn:hover{background:#7c3aed}
+  .btn:active{transform:scale(.97)}
+  .btn.ghost{background:transparent;border:1px solid var(--line-2);color:var(--text);font-weight:500}
+  .btn.ghost:hover{background:var(--surface-2)}
+  .btn.sm{padding:7px 13px;font-size:13px}
+  .burger{display:none;width:38px;height:38px;border-radius:9px;background:var(--surface-2);
+    border:1px solid var(--line);align-items:center;justify-content:center}
+  .burger svg{width:18px;height:18px;color:var(--text)}
+
+  /* mobile drawer */
+  .drawer{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;
+    transition:opacity .25s}
+  .drawer.open{opacity:1;pointer-events:auto}
+  .drawer-panel{position:absolute;top:0;right:0;bottom:0;width:min(300px,82vw);background:var(--surface);
+    border-left:1px solid var(--line);padding:18px;transform:translateX(100%);transition:transform .3s var(--ease);
+    display:flex;flex-direction:column;gap:6px}
+  .drawer.open .drawer-panel{transform:none}
+  .drawer-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+  .drawer a{padding:12px 12px;border-radius:9px;color:var(--dim);font-size:15.5px;font-weight:500}
+  .drawer a.active{color:var(--text);background:var(--accent-soft)}
+  .drawer .search{margin-top:8px;min-width:0}
+  .icon-btn{width:34px;height:34px;border-radius:8px;background:var(--surface-2);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;color:var(--dim)}
+  .icon-btn svg{width:16px;height:16px}
+
+  /* ---------- layout ---------- */
+  main{max-width:var(--maxw);margin:0 auto;padding:34px 22px 90px}
+  .view{animation:fade .4s var(--ease)}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+  .eyebrow{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:600}
+  h1.page{font-size:26px;font-weight:700;letter-spacing:-.03em;margin-bottom:22px}
+  .muted{color:var(--dim)}
+  .pos{color:var(--good)} .neg{color:var(--bad)}
+
+  /* ---------- home ---------- */
+  .hero{padding:70px 0 46px;max-width:640px}
+  .hero h2{font-size:clamp(38px,6vw,60px);font-weight:800;letter-spacing:-.045em;line-height:1.02;text-wrap:balance}
+  .hero h2 span{color:var(--accent)}
+  .hero p{color:var(--dim);font-size:16.5px;margin-top:20px;max-width:460px}
+  .hero-btns{display:flex;gap:12px;margin-top:30px;flex-wrap:wrap}
+  .hero-btns .btn{padding:12px 22px;font-size:15px}
+  .stats-row{display:flex;gap:52px;margin-top:64px;flex-wrap:wrap}
+  .stat-big .v{font-size:34px;font-weight:800;letter-spacing:-.04em;color:var(--accent-2)}
+  .stat-big .l{color:var(--faint);font-size:14px;margin-top:2px}
+  .home-hr{border:0;border-top:1px solid var(--line);margin:0}
+
+  /* ---------- profile layout with subnav ---------- */
+  .split{display:grid;grid-template-columns:212px 1fr;gap:22px;align-items:start}
+  .subnav{position:sticky;top:82px;display:flex;flex-direction:column;gap:3px}
+  .subnav a{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:9px;color:var(--dim);
+    font-size:14px;font-weight:500;transition:.15s}
+  .subnav a svg{width:16px;height:16px;opacity:.75}
+  .subnav a:hover{background:var(--surface-2);color:var(--text)}
+  .subnav a.active{background:var(--accent-soft);color:var(--accent-2)}
+  .subnav a.active svg{opacity:1}
+
+  /* profile header */
+  .phead{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+  .avatar{width:66px;height:66px;border-radius:14px;object-fit:cover;border:1px solid var(--line-2);background:var(--surface-3)}
+  .avatar.sm{width:44px;height:44px;border-radius:11px}
+  .pname{display:flex;align-items:center;gap:8px;font-size:22px;font-weight:700;letter-spacing:-.02em}
+  .verified{width:19px;height:19px;color:var(--accent)}
+  .pmeta{display:flex;align-items:center;gap:10px;color:var(--faint);font-size:13.5px;margin-top:3px}
+  .lvl{background:var(--surface-3);border:1px solid var(--line);border-radius:6px;padding:2px 8px;font-size:12px;
+    color:var(--dim);font-weight:600}
+  .phead .spacer{flex:1}
+  .updated{color:var(--faint);font-size:13px}
+
+  /* stat cards */
+  .statgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:22px}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:15px 16px}
+  .stat .k{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);font-weight:600}
+  .stat .v{font-size:25px;font-weight:700;letter-spacing:-.03em;margin-top:9px}
+  .stat .d{font-size:12px;margin-top:4px;font-weight:600}
+
+  /* chart + recent */
+  .prow{display:grid;grid-template-columns:1fr 340px;gap:16px}
+  .chart-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .chart-head h3{font-size:14px;font-weight:600}
+  .seg{display:flex;gap:2px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:3px}
+  .seg button{border:0;background:none;color:var(--dim);font-size:12px;font-weight:600;padding:5px 10px;
+    border-radius:6px;transition:.15s}
+  .seg button.on{background:var(--accent);color:#fff}
+  svg.chart{width:100%;height:190px;display:block;overflow:visible}
+  .recent-list{display:flex;flex-direction:column}
+  .recent{display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid var(--line)}
+  .recent:last-child{border-bottom:0}
+  .rmap{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+    font-size:10px;font-weight:700;color:#fff;flex:none;letter-spacing:-.02em}
+  .rscore{font-weight:700;font-size:14px;letter-spacing:-.02em}
+  .recent .ago{margin-left:auto;color:var(--faint);font-size:12.5px}
+  .link-row{text-align:center;margin-top:12px}
+  .link-row a{color:var(--accent-2);font-size:13.5px;font-weight:600}
+  .barrow2{display:flex;align-items:center;gap:12px;margin:11px 0}
+  .barrow2 .bl2{display:flex;align-items:center;gap:8px;width:120px;font-size:13px;color:var(--dim);flex:none}
+  .barrow2 .bt2{flex:1;height:8px;background:var(--surface-3);border-radius:5px;overflow:hidden}
+  .barrow2 .bt2 i{display:block;height:100%;border-radius:5px}
+  .barrow2 .bv2{width:56px;text-align:right;font-size:13px;font-weight:600;color:var(--text)}
+  .empty-note{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);
+    border-radius:var(--r-sm);padding:12px 16px;font-size:13px;color:var(--dim);margin-bottom:16px}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:var(--surface-3);
+    border:1px solid var(--line-2);color:var(--text);padding:11px 18px;border-radius:10px;font-size:13.5px;
+    font-weight:500;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s var(--ease);
+    box-shadow:0 8px 30px rgba(0,0,0,.5)}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  /* ---------- matches table ---------- */
+  .toolbar{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+  .tabs{display:flex;gap:2px;background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:3px}
+  .tabs button{border:0;background:none;color:var(--dim);font-size:13px;font-weight:600;padding:7px 13px;
+    border-radius:7px;transition:.15s;white-space:nowrap}
+  .tabs button.on{background:var(--accent);color:#fff}
+  .toolbar .spacer{flex:1}
+  .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:720px}
+  thead th{text-align:right;padding:13px 14px;font-size:11px;letter-spacing:.04em;text-transform:uppercase;
+    color:var(--faint);font-weight:600;border-bottom:1px solid var(--line);white-space:nowrap}
+  thead th:first-child,tbody td:first-child{text-align:left}
+  thead th.l,tbody td.l{text-align:left}
+  tbody td{padding:13px 14px;text-align:right;border-bottom:1px solid var(--line);
+    font-variant-numeric:tabular-nums;color:var(--dim);white-space:nowrap}
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr:hover td{background:var(--surface-2)}
+  td .mapcell{display:flex;align-items:center;gap:9px;color:var(--text);font-weight:500}
+  .res{font-weight:700;font-size:12.5px}
+  .res.w{color:var(--good)} .res.l{color:var(--bad)}
+  .score{color:var(--text);font-weight:600}
+  .rating-pill{font-weight:700;color:var(--text)}
+  .rating-pill.w{color:var(--good)} .rating-pill.l{color:var(--bad)}
+
+  /* ---------- compare ---------- */
+  .cmp-top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:20px;margin-bottom:26px}
+  .cmp-player{display:flex;align-items:center;gap:13px}
+  .cmp-player.right{flex-direction:row-reverse;text-align:right}
+  .cmp-player .nm{font-size:17px;font-weight:700;display:flex;align-items:center;gap:6px}
+  .cmp-player.right .nm{flex-direction:row-reverse}
+  .cmp-player .lv{color:var(--faint);font-size:13px;margin-top:2px}
+  .vs{font-size:13px;font-weight:700;color:var(--faint);background:var(--surface-2);border:1px solid var(--line);
+    width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+  .cmp-rows{display:flex;flex-direction:column;gap:20px}
+  .cmp-row{}
+  .cmp-vals{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+  .cmp-vals .cv{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums}
+  .cmp-vals .cl{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);font-weight:600}
+  .cmp-bars{display:flex;align-items:center;gap:6px}
+  .cmp-bars .track{flex:1;height:6px;background:var(--surface-3);border-radius:4px;overflow:hidden;display:flex}
+  .cmp-bars .track.l{justify-content:flex-end}
+  .cmp-bars .track i{height:100%;border-radius:4px;display:block}
+  .cmp-bars .track.l i{background:var(--accent)}
+  .cmp-bars .track.r i{background:var(--blue)}
+  .cmp-legend{display:flex;justify-content:center;gap:24px;margin-top:28px;font-size:13px;color:var(--dim)}
+  .cmp-legend span{display:flex;align-items:center;gap:7px}
+  .dot{width:10px;height:10px;border-radius:3px}
+
+  /* ---------- weapons ---------- */
+  .section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px}
+  .section-head h1.page{margin:0}
+  select.dd{background:var(--surface-2);border:1px solid var(--line);color:var(--text);border-radius:9px;
+    padding:9px 13px;font-size:13.5px;font-family:inherit;outline:none;cursor:pointer}
+  .wgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .wcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+  .wcard-top{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .wicon{width:44px;height:26px;color:var(--dim);flex:none}
+  .wcard .wn{font-weight:600;font-size:15px}
+  .wcard .wk{color:var(--faint);font-size:12.5px;margin-top:1px}
+  .wstats{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px}
+  .wstat .wl{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--faint);font-weight:600}
+  .wstat .wv{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:3px}
+  .wcard.wide{grid-column:span 1}
+
+  /* ---------- maps ---------- */
+  .mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .mcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;
+    display:flex;flex-direction:column;gap:16px}
+  .mcard-top{display:flex;align-items:center;gap:12px}
+  .mbadge{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:13px;color:#fff;letter-spacing:-.03em;flex:none}
+  .mcard .mn{font-weight:600;font-size:16px}
+  .mstats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .mstat .ml{font-size:10.5px;letter-spacing:.03em;text-transform:uppercase;color:var(--faint);font-weight:600}
+  .mstat .mv{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:4px}
+
+  /* ---------- responsive ---------- */
+  @media(max-width:1000px){
+    .statgrid{grid-template-columns:repeat(3,1fr)}
+    .prow{grid-template-columns:1fr}
+    .wgrid,.mgrid{grid-template-columns:repeat(2,1fr)}
+  }
+  @media(max-width:860px){
+    .nav-links,.nav-right .search,.nav-right .btn{display:none}
+    .burger{display:flex}
+    .split{grid-template-columns:1fr}
+    .subnav{position:static;flex-direction:row;overflow-x:auto;gap:4px;padding-bottom:4px;margin-bottom:6px}
+    .subnav a{white-space:nowrap}
+    .subnav a span{display:none}
+    .subnav a{padding:8px 14px}
+    .hero{padding:46px 0 30px}
+    .stats-row{gap:32px;margin-top:44px}
+  }
+  @media(max-width:620px){
+    main{padding:24px 16px 80px}
+    .statgrid{grid-template-columns:repeat(2,1fr)}
+    .wgrid,.mgrid{grid-template-columns:1fr}
+    .cmp-top{grid-template-columns:1fr;gap:14px;justify-items:center}
+    .cmp-player,.cmp-player.right{flex-direction:column;text-align:center}
+    .cmp-player.right .nm{flex-direction:row}
+    /* table -> cards */
+    table,thead,tbody,th,td,tr{display:block}
+    table{min-width:0}
+    thead{display:none}
+    tbody tr{border:1px solid var(--line);border-radius:var(--r);margin-bottom:10px;padding:6px 4px;background:var(--surface)}
+    tbody tr:hover td{background:none}
+    tbody td{display:flex;justify-content:space-between;align-items:center;text-align:right;
+      border-bottom:1px solid var(--line);padding:9px 14px;white-space:normal}
+    tbody tr td:last-child{border-bottom:0}
+    tbody td::before{content:attr(data-l);color:var(--faint);font-size:11px;letter-spacing:.04em;
+      text-transform:uppercase;font-weight:600;text-align:left}
+    td.l .mapcell{margin-left:auto}
+  }
+  @media(max-width:400px){
+    .statgrid{grid-template-columns:1fr 1fr}
+    .stats-row{gap:22px}
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-in">
+    <a href="#/home" class="logo">CS<b>2</b>&nbsp;TRACKER</a>
+    <nav class="nav-links" id="navLinks">
+      <a href="#/home" data-route="home">Главная</a>
+      <a href="#/profile" data-route="profile">Профиль</a>
+      <a href="#/compare" data-route="compare">Сравнение</a>
+      <a href="#/weapons" data-route="weapons">Оружие</a>
+      <a href="#/maps" data-route="maps">Карты</a>
+    </nav>
+    <div class="nav-right">
+      <label class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" placeholder="Поиск игрока…" aria-label="Поиск игрока">
+      </label>
+      <button class="btn sm">Войти</button>
+      <button class="burger" id="burger" aria-label="Меню">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="drawer" id="drawer">
+  <div class="drawer-panel">
+    <div class="drawer-head">
+      <span class="logo">CS<b>2</b>&nbsp;TRACKER</span>
+      <button class="icon-btn" id="drawerClose" aria-label="Закрыть">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <a href="#/home" data-route="home">Главная</a>
+    <a href="#/profile" data-route="profile">Профиль</a>
+    <a href="#/compare" data-route="compare">Сравнение</a>
+    <a href="#/weapons" data-route="weapons">Оружие</a>
+    <a href="#/maps" data-route="maps">Карты</a>
+    <label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><input placeholder="Поиск игрока…"></label>
+    <button class="btn" style="margin-top:10px">Войти</button>
+  </div>
+</div>
+
+<main id="app"></main>
+
+<script>
+/* ===================== real data (Cybershoke) ===================== */
+const RAW = {"meta":{"name":"44dERTYY","name_unique":"44dERTYY","avatar":"https://avatars.steamstatic.com/c76e1ae66433213eb55a48fea29ad45e308713d2_full.jpg","country":"ru","steamid64":"76561199712705512","xp":5187,"level":4,"place":1065037,"faceit":{"elo":904,"level":4},"lastconnect":1787567984},"global":{"kills":17741,"deaths":26370,"shoots":354253,"hits":66251,"headshots":8349,"playtime":2593977},"weapons":{"weapon_ak47":{"kills":5056,"headshots":2649,"shoots":131176,"hits":16301,"hp":679347},"weapon_awp":{"kills":2955,"headshots":407,"shoots":12849,"hits":3366,"hp":491305},"weapon_m4a1_silencer":{"kills":1879,"headshots":798,"shoots":58748,"hits":7212,"hp":253163},"weapon_usp_silencer":{"kills":1859,"headshots":1567,"shoots":46723,"hits":5568,"hp":275812},"weapon_glock":{"kills":1543,"headshots":1178,"shoots":0,"hits":5535,"hp":207021},"weapon_m4a1":{"kills":531,"headshots":219,"shoots":19315,"hits":2159,"hp":69018},"weapon_mp9":{"kills":468,"headshots":210,"shoots":21506,"hits":2918,"hp":62520},"weapon_deagle":{"kills":457,"headshots":291,"shoots":8915,"hits":1137,"hp":76802},"weapon_hegrenade":{"kills":343,"headshots":0,"shoots":0,"hits":6224,"hp":128565},"weapon_mac10":{"kills":333,"headshots":114,"shoots":12684,"hits":2083,"hp":41833},"weapon_taser":{"kills":279,"headshots":0,"shoots":0,"hits":283,"hp":139504},"weapon_knife":{"kills":264,"headshots":0,"shoots":0,"hits":690,"hp":34172},"weapon_tec9":{"kills":245,"headshots":148,"shoots":0,"hits":914,"hp":35371},"weapon_galilar":{"kills":190,"headshots":80,"shoots":6672,"hits":776,"hp":24000},"weapon_inferno":{"kills":149,"headshots":0,"shoots":0,"hits":5543,"hp":26048},"weapon_elite":{"kills":147,"headshots":111,"shoots":5256,"hits":435,"hp":20838},"weapon_p250":{"kills":141,"headshots":117,"shoots":2969,"hits":395,"hp":22893},"weapon_fiveseven":{"kills":140,"headshots":88,"shoots":3795,"hits":452,"hp":18840},"weapon_ump45":{"kills":117,"headshots":56,"shoots":5428,"hits":638,"hp":17074},"weapon_ssg08":{"kills":106,"headshots":38,"shoots":1510,"hits":255,"hp":25846},"weapon_xm1014":{"kills":103,"headshots":50,"shoots":779,"hits":626,"hp":11835},"weapon_mag7":{"kills":95,"headshots":64,"shoots":567,"hits":578,"hp":12023},"weapon_mp7":{"kills":75,"headshots":20,"shoots":3111,"hits":378,"hp":8412},"weapon_mp5sd":{"kills":72,"headshots":33,"shoots":2340,"hits":388,"hp":9035},"weapon_famas":{"kills":62,"headshots":19,"shoots":3027,"hits":291,"hp":8152},"weapon_sg556":{"kills":38,"headshots":19,"shoots":921,"hits":138,"hp":5429},"weapon_cz75a":{"kills":38,"headshots":21,"shoots":1084,"hits":168,"hp":5689},"weapon_aug":{"kills":33,"headshots":10,"shoots":1579,"hits":179,"hp":5007},"weapon_g3sg1":{"kills":24,"headshots":6,"shoots":238,"hits":48,"hp":4253},"weapon_nova":{"kills":21,"headshots":11,"shoots":126,"hits":183,"hp":2963}},"maps":{"de_mirage":{"kills":10173,"rounds_ct":4888,"rounds_t":4752,"bomb_planted":1656,"bomb_defused":599,"playtime":1458332},"de_dust2":{"kills":4294,"rounds_ct":2073,"rounds_t":2147,"bomb_planted":679,"bomb_defused":187,"playtime":663855},"de_nuke":{"kills":1646,"rounds_ct":745,"rounds_t":765,"bomb_planted":187,"bomb_defused":82,"playtime":252981},"de_ancient":{"kills":388,"rounds_ct":210,"rounds_t":209,"bomb_planted":66,"bomb_defused":20,"playtime":69637},"de_inferno":{"kills":284,"rounds_ct":140,"rounds_t":174,"bomb_planted":63,"bomb_defused":26,"playtime":43180},"de_overpass":{"kills":196,"rounds_ct":106,"rounds_t":101,"bomb_planted":54,"bomb_defused":29,"playtime":20247},"de_anubis":{"kills":134,"rounds_ct":50,"rounds_t":59,"bomb_planted":9,"bomb_defused":5,"playtime":18806},"de_train":{"kills":117,"rounds_ct":64,"rounds_t":65,"bomb_planted":30,"bomb_defused":12,"playtime":17929},"de_cache":{"kills":129,"rounds_ct":40,"rounds_t":55,"bomb_planted":25,"bomb_defused":14,"playtime":7960},"de_vertigo":{"kills":42,"rounds_ct":30,"rounds_t":19,"bomb_planted":5,"bomb_defused":5,"playtime":9203}},"clutches":{"1":0,"2":443,"3":132,"4":34,"5":11},"modes":[{"id":42,"kills":11897,"headshots":5007,"hp":1872690,"playtime":2173427,"rounds_ct":5552,"rounds_t":6066,"bomb_planted":1493,"bomb_defused":211},{"id":29,"kills":2782,"headshots":1382,"hp":395678,"playtime":213539,"rounds_ct":1383,"rounds_t":1375},{"id":23,"kills":1397,"headshots":1180,"hp":198637,"playtime":89060,"rounds_ct":624,"rounds_t":646},{"id":28,"kills":384,"headshots":200,"hp":58853,"playtime":34152,"rounds_ct":284,"rounds_t":159},{"id":41,"kills":280,"headshots":121,"hp":37026,"playtime":26659,"rounds_ct":476,"rounds_t":29}]};
+
+const WMETA={weapon_ak47:['AK-47','rifle'],weapon_m4a1_silencer:['M4A1-S','rifle'],weapon_m4a1:['M4A4','rifle'],weapon_aug:['AUG','rifle'],weapon_sg556:['SG 553','rifle'],weapon_famas:['FAMAS','rifle'],weapon_galilar:['Galil AR','rifle'],weapon_awp:['AWP','awp'],weapon_ssg08:['SSG 08','awp'],weapon_g3sg1:['G3SG1','awp'],weapon_glock:['Glock-18','pistol'],weapon_usp_silencer:['USP-S','pistol'],weapon_deagle:['Desert Eagle','pistol'],weapon_p250:['P250','pistol'],weapon_fiveseven:['Five-SeveN','pistol'],weapon_tec9:['Tec-9','pistol'],weapon_cz75a:['CZ75-Auto','pistol'],weapon_elite:['Dual Berettas','pistol'],weapon_mac10:['MAC-10','smg'],weapon_mp9:['MP9','smg'],weapon_mp7:['MP7','smg'],weapon_mp5sd:['MP5-SD','smg'],weapon_ump45:['UMP-45','smg'],weapon_nova:['Nova','smg'],weapon_xm1014:['XM1014','smg'],weapon_mag7:['MAG-7','smg'],weapon_hegrenade:['Граната','util'],weapon_inferno:['Молотов','util'],weapon_taser:['Zeus','util'],weapon_knife:['Нож','util']};
+const num=x=>typeof x==='string'?(parseInt(x)||0):(x||0);
+const fmt=n=>Math.round(n).toLocaleString('ru-RU');
+const flagOf={ru:'🇷🇺',ua:'🇺🇦',kz:'🇰🇿',by:'🇧🇾'};
+
+const MAP_COLORS={Mirage:'#c98a3c',Inferno:'#c0392b',Anubis:'#2f9e8f',Overpass:'#e0a92e',Nuke:'#2f6fb0',Dust2:'#c9a24a',Ancient:'#3f7d4f',Vertigo:'#5b6bb0',Train:'#7a8290',Cache:'#8a6bb0'};
+const MAP_ABBR={Mirage:'MRG',Inferno:'INF',Anubis:'ANB',Overpass:'OVP',Nuke:'NUK',Dust2:'D2',Ancient:'ANC',Vertigo:'VTG',Train:'TRN',Cache:'CHE'};
+const mapName=k=>{const s=k.replace(/^de_/,''); return s.charAt(0).toUpperCase()+s.slice(1).replace('dust2','Dust2');};
+
+/* live model (reassigned when a new player loads) */
+let PLAYER,OPP,CMP,WEAPONS,TOPWEAPONS,MAPS,MAPKILLS,mapKills;
+
+function applyRaw(R){
+  const G=R.global;
+  const kd=G.kills/G.deaths, hs=G.headshots/G.kills*100, acc=G.shoots?G.hits/G.shoots*100:0, hours=G.playtime/3600;
+  let totRounds=0, totHp=0;
+  (R.modes||[]).forEach(m=>{const rd=num(m.rounds_ct)+num(m.rounds_t); if(rd>0){totRounds+=rd; totHp+=num(m.hp);}});
+  mapKills=Object.values(R.maps).reduce((a,m)=>a+m.kills,0);
+  const kpr=totRounds?mapKills/totRounds:0;
+  const dpk=G.kills?(totHp||G.hp||0)/G.kills:0;
+
+  PLAYER={
+    name:R.meta.name, flag:flagOf[R.meta.country]||'🌐', level:R.meta.level,
+    avatar:R.meta.avatar, faceit:R.meta.faceit, place:R.meta.place,
+    stats:[
+      {k:'K/D', v:kd.toFixed(2)},
+      {k:'В голову', v:hs.toFixed(0)+'%'},
+      {k:'Точность', v:acc.toFixed(1)+'%'},
+      {k:'Кил/раунд', v:kpr.toFixed(2)},
+      {k:'Убийства', v:fmt(G.kills)},
+      {k:'Часы', v:fmt(hours)},
+    ]
+  };
+  OPP={name:'Средний игрок', flag:'🌐', level:'CS2'};
+  CMP=[
+    {l:'K/D', a:+kd.toFixed(2), b:1.00, max:1.6},
+    {l:'В голову', a:+hs.toFixed(0), b:40, max:60, suf:'%'},
+    {l:'Точность', a:+acc.toFixed(1), b:22, max:36, suf:'%'},
+    {l:'Кил/раунд', a:+kpr.toFixed(2), b:0.68, max:1.2},
+    {l:'Урон/кил', a:Math.round(dpk), b:130, max:400},
+  ];
+  WEAPONS=Object.entries(R.weapons).map(([k,w])=>{
+    const m=WMETA[k]||[k.replace('weapon_',''),'rifle'];
+    return {n:m[0], type:m[1], kills:num(w.kills),
+      acc:num(w.shoots)>0?(num(w.hits)/num(w.shoots)*100).toFixed(0)+'%':'—',
+      hs:num(w.kills)>0?(num(w.headshots)/num(w.kills)*100).toFixed(0)+'%':'—',
+      dpk:num(w.kills)>0?Math.round(num(w.hp)/num(w.kills)):0};
+  }).filter(w=>w.kills>=30).sort((a,b)=>b.kills-a.kills).slice(0,9);
+  TOPWEAPONS=WEAPONS.slice(0,5);
+  MAPS=Object.entries(R.maps).map(([k,m])=>{
+    const rounds=num(m.rounds_ct)+num(m.rounds_t);
+    return {n:mapName(k), kills:num(m.kills), hours:num(m.playtime)/3600, rounds,
+      kpr:rounds>0?num(m.kills)/rounds:0};
+  }).filter(m=>m.rounds>=50 && /^(Mirage|Inferno|Anubis|Overpass|Nuke|Ancient|Dust2|Vertigo|Train|Cache)$/.test(m.n)).sort((a,b)=>b.kills-a.kills).slice(0,9);
+  MAPKILLS=MAPS.slice(0,6).map(m=>({name:m.n, kills:m.kills}));
+}
+
+/* normalize FULL cybershoke /api/user/data -> slim shape used by applyRaw */
+function normalize(full){
+  const M=full.statistics.modes, m0=M['0']||{weapons:{}};
+  const maps={}, modes=[];
+  for(const id in M){
+    if(id==='0') continue;
+    const md=M[id], g=md.general||{};
+    if(md.maps) for(const p in md.maps){const d=md.maps[p];
+      if(!maps[p]) maps[p]={kills:0,rounds_ct:0,rounds_t:0,bomb_planted:0,bomb_defused:0,playtime:0};
+      for(const f in maps[p]) maps[p][f]+=num(d[f]);}
+    const pt=num(g.playtime);
+    if(pt>300 && (num(g.kills)>0 || num(g.rounds_ct)+num(g.rounds_t)>0))
+      modes.push({id:+id,kills:num(g.kills),headshots:num(g.headshots),hp:num(g.hp),playtime:pt,
+        rounds_ct:num(g.rounds_ct),rounds_t:num(g.rounds_t)});
+  }
+  const g=full.cybershoke.global, top=full.cybershoke.top;
+  return {
+    meta:{name:full.basic.name,country:full.basic.country,avatar:full.basic.avatar,
+      level:num(g.rank),place:top&&top.global?num(top.global):0,
+      faceit:full.basic.connect&&full.basic.connect.faceit?{elo:full.basic.connect.faceit.elo,level:full.basic.connect.faceit.skill_level}:null},
+    global:{kills:num(g.kills),deaths:num(g.deaths),shoots:num(g.shoots),hits:num(g.hits),headshots:num(g.headshots),playtime:num(g.playtime),hp:0},
+    weapons:m0.weapons||{}, maps, modes
+  };
+}
+
+applyRaw(RAW);
+
+/* ===================== icons ===================== */
+const IC = {
+  overview:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
+  matches:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>',
+  maps:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 4-5 2v14l5-2 6 2 5-2V4l-5 2-6-2Z"/><path d="M9 4v14M15 6v14"/></svg>',
+  weapons:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h13l3 3v2h-3l-2 3h-4l-1-3H3z"/><path d="M7 13v3"/></svg>',
+  ach:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="9" r="5"/><path d="M9 13.5 8 21l4-2 4 2-1-7.5"/></svg>',
+  verified:'<svg viewBox="0 0 24 24" fill="currentColor" class="verified"><path d="m12 1 2.6 1.9 3.2-.2 1 3 2.6 1.8-1 3 1 3-2.6 1.8-1 3-3.2-.2L12 23l-2.6-1.9-3.2.2-1-3L2.6 16.7l1-3-1-3 2.6-1.8 1-3 3.2.2z"/><path d="m8.5 12 2.5 2.5 4.5-5" fill="none" stroke="#0a0a0c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  gun:'<svg class="wicon" viewBox="0 0 60 34" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h40l10 4v3h-9l-4 6h-8l-2-6H4z"/><path d="M14 19v5"/></svg>',
+  awp:'<svg class="wicon" viewBox="0 0 60 34" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 15h46l10 2v3H30l-3 5h-6l-1-5H2z"/><circle cx="40" cy="9" r="3"/><path d="M40 12v3"/></svg>',
+  pistol:'<svg class="wicon" viewBox="0 0 60 34" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 10h30v8H22l-4 10h-7l2-10h-3z"/></svg>',
+  smg:'<svg class="wicon" viewBox="0 0 60 34" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 12h34l6 3v3h-8l-3 5h-6l-2-5H16v6h-5v-6H6z"/></svg>',
+  share:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>',
+};
+const wIcon = t => t==='awp'?IC.awp : t==='pistol'?IC.pistol : t==='smg'?IC.smg : IC.gun;
+
+/* ===================== helpers ===================== */
+const el = (h)=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstChild;};
+const dCls = d => d.startsWith('-')?'neg':'pos';
+function mapBadge(name,cls='rmap'){
+  const c=MAP_COLORS[name]||'#5b6bb0'; const ab=MAP_ABBR[name]||name.slice(0,3).toUpperCase();
+  return `<span class="${cls}" style="background:${c}22;color:${c}">${ab}</span>`;
+}
+
+/* rating line chart */
+function chart(series){
+  const w=600,h=190,pad=6;
+  const min=Math.min(...series), max=Math.max(...series);
+  const rng=(max-min)||1;
+  const step=w/(series.length-1);
+  const pts=series.map((v,i)=>[i*step, h-pad-((v-min)/rng)*(h-pad*2)]);
+  const line=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const area=line+` L ${w} ${h} L 0 ${h} Z`;
+  const grid=[0,.25,.5,.75,1].map(f=>`<line x1="0" x2="${w}" y1="${(pad+f*(h-pad*2)).toFixed(0)}" y2="${(pad+f*(h-pad*2)).toFixed(0)}" stroke="rgba(255,255,255,.05)"/>`).join('');
+  const last=pts[pts.length-1];
+  return `<svg class="chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <defs><linearGradient id="g" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="var(--accent)" stop-opacity=".28"/>
+      <stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>
+    ${grid}
+    <path d="${area}" fill="url(#g)"/>
+    <path d="${line}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="4" fill="var(--accent)"/>
+    <circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="8" fill="var(--accent)" opacity=".2"/>
+  </svg>`;
+}
+
+/* ===================== views ===================== */
+function vHome(){
+  return `<div class="view">
+    <section class="hero">
+      <h2>Отслеживай<br>свою игру.<br><span>Становись лучше.</span></h2>
+      <p>Анализируй статистику матчей CS2, сравнивай себя с другими игроками и отслеживай прогресс на каждой карте и с каждым оружием.</p>
+      <div class="hero-btns">
+        <a class="btn" href="#/profile">Найти профиль</a>
+        <a class="btn ghost" href="#/compare">Сравнить игроков</a>
+      </div>
+    </section>
+    <hr class="home-hr">
+    <div class="stats-row">
+      <div class="stat-big"><div class="v tnum">1M+</div><div class="l">Игроков</div></div>
+      <div class="stat-big"><div class="v tnum">25M+</div><div class="l">Матчей</div></div>
+      <div class="stat-big"><div class="v tnum">99.9%</div><div class="l">Точность</div></div>
+    </div>
+  </div>`;
+}
+
+function profileSubnav(active){
+  const items=[['overview','Обзор'],['matches','Матчи'],['maps','Карты'],['weapons','Оружие'],['ach','Достижения']];
+  return `<aside class="subnav">${items.map(([k,l])=>{
+    const href = k==='overview'?'#/profile' : k==='ach'?'#/profile' : '#/'+k;
+    return `<a href="${href}" class="${active===k?'active':''}">${IC[k]}<span>${l}</span></a>`;
+  }).join('')}</aside>`;
+}
+
+function vProfile(){
+  const s=PLAYER.stats;
+  const maxMK=Math.max(...MAPKILLS.map(m=>m.kills),1);
+  return `<div class="view split">
+    ${profileSubnav('overview')}
+    <div>
+      <div class="phead">
+        <img class="avatar" src="${PLAYER.avatar}" alt="" onerror="this.style.visibility='hidden'">
+        <div>
+          <div class="pname">${PLAYER.name} ${IC.verified}</div>
+          <div class="pmeta"><span class="lvl">Уровень ${PLAYER.level}</span><span>${PLAYER.flag}</span>${PLAYER.faceit?`<span>FACEIT ${PLAYER.faceit.elo}</span>`:''}</div>
+        </div>
+        <div class="spacer"></div>
+        <span class="updated">Место #${fmt(PLAYER.place)}</span>
+        <button class="btn ghost sm" style="display:flex;align-items:center;gap:7px">${IC.share} Поделиться</button>
+      </div>
+      <div class="statgrid">
+        ${s.map(x=>`<div class="stat"><div class="k">${x.k}</div><div class="v tnum">${x.v}</div></div>`).join('')}
+      </div>
+      <div class="prow">
+        <div class="card">
+          <div class="chart-head">
+            <h3>Убийства по картам</h3>
+            <span class="muted" style="font-size:12px">всего ${fmt(mapKills)}</span>
+          </div>
+          <div style="margin-top:14px">
+            ${MAPKILLS.map(m=>`<div class="barrow2">
+              <span class="bl2">${mapBadge(m.name)} ${m.name}</span>
+              <span class="bt2"><i style="width:${m.kills/maxMK*100}%;background:${MAP_COLORS[m.name]||'var(--accent)'}"></i></span>
+              <span class="bv2 tnum">${fmt(m.kills)}</span>
+            </div>`).join('')}
+          </div>
+        </div>
+        <div class="card">
+          <h3 style="font-size:14px;font-weight:600;margin-bottom:6px">Топ оружие</h3>
+          <div class="recent-list">
+            ${TOPWEAPONS.map(w=>`<div class="recent">
+              <span class="rmap" style="background:var(--accent-soft);color:var(--accent-2)">${w.n.slice(0,2).toUpperCase()}</span>
+              <div style="font-weight:600;font-size:13.5px">${w.n}</div>
+              <div class="ago tnum">${fmt(w.kills)} уб.</div>
+            </div>`).join('')}
+          </div>
+          <div class="link-row"><a href="#/weapons">Всё оружие →</a></div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function vMatches(){
+  // Cybershoke не отдаёт историю матчей -> вместо неё детальная статистика по картам
+  const maxK=Math.max(...MAPS.map(m=>m.kills),1);
+  return `<div class="view split">
+    ${profileSubnav('matches')}
+    <div>
+      <h1 class="page">Статистика по картам</h1>
+      <div class="empty-note">История отдельных матчей недоступна через Cybershoke API — показана детальная сводка по картам за всё время.</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th class="l">Карта</th><th>Убийства</th><th>Раунды</th><th>Кил/раунд</th><th>Часы</th>
+          </tr></thead>
+          <tbody>
+            ${MAPS.map(m=>`<tr>
+              <td class="l" data-l="Карта"><span class="mapcell">${mapBadge(m.n)} ${m.n}</span></td>
+              <td class="score" data-l="Убийства">${fmt(m.kills)}</td>
+              <td data-l="Раунды">${fmt(m.rounds)}</td>
+              <td data-l="Кил/раунд"><span class="rating-pill ${m.kpr>=1?'w':''}">${m.kpr.toFixed(2)}</span></td>
+              <td data-l="Часы">${m.hours>=1?Math.round(m.hours):m.hours.toFixed(1)}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+function vCompare(){
+  return `<div class="view split">
+    ${profileSubnav('overview')}
+    <div>
+      <div class="cmp-top">
+        <div class="cmp-player">
+          <img class="avatar sm" src="${PLAYER.avatar}" alt="" onerror="this.style.visibility='hidden'">
+          <div><div class="nm">${PLAYER.name} ${IC.verified}</div><div class="lv">Уровень ${PLAYER.level} ${PLAYER.flag}</div></div>
+        </div>
+        <div class="vs">VS</div>
+        <div class="cmp-player right">
+          <div class="avatar sm" style="display:flex;align-items:center;justify-content:center;color:var(--blue);font-weight:700;background:var(--blue-soft)">${OPP.flag}</div>
+          <div><div class="nm">${OPP.name}</div><div class="lv">ориентир ${OPP.level}</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="cmp-rows">
+          ${CMP.map(r=>{
+            const suf=r.suf||''; const la=(r.a/r.max*100), lb=(r.b/r.max*100);
+            const aWin=r.a>=r.b;
+            return `<div class="cmp-row">
+              <div class="cmp-vals">
+                <span class="cv" style="color:${aWin?'var(--accent-2)':'var(--text)'}">${r.a}${suf}</span>
+                <span class="cl">${r.l}</span>
+                <span class="cv" style="color:${!aWin?'var(--blue)':'var(--text)'}">${r.b}${suf}</span>
+              </div>
+              <div class="cmp-bars">
+                <div class="track l"><i style="width:${la}%"></i></div>
+                <div class="track r"><i style="width:${lb}%"></i></div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+        <div class="cmp-legend">
+          <span><i class="dot" style="background:var(--accent)"></i>${PLAYER.name}</span>
+          <span><i class="dot" style="background:var(--blue)"></i>${OPP.name}</span>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function vWeapons(){
+  return `<div class="view">
+    <div class="section-head">
+      <h1 class="page">Статистика по оружию</h1>
+      <select class="dd"><option>Все режимы</option><option>Соревновательный</option><option>Премьер-режим</option></select>
+    </div>
+    <div class="wgrid">
+      ${WEAPONS.map(w=>`<div class="wcard">
+        <div class="wcard-top">${wIcon(w.type)}<div><div class="wn">${w.n}</div><div class="wk">${fmt(w.kills)} убийств</div></div></div>
+        <div class="wstats">
+          <div class="wstat"><div class="wl">Убийства</div><div class="wv">${fmt(w.kills)}</div></div>
+          <div class="wstat"><div class="wl">Точность</div><div class="wv">${w.acc}</div></div>
+          <div class="wstat"><div class="wl">В голову</div><div class="wv">${w.hs}</div></div>
+          <div class="wstat"><div class="wl">Урон/кил</div><div class="wv">${w.dpk}</div></div>
+        </div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function vMaps(){
+  return `<div class="view">
+    <div class="section-head">
+      <h1 class="page">Статистика по картам</h1>
+      <select class="dd"><option>Все режимы</option><option>Соревновательный</option><option>Премьер-режим</option></select>
+    </div>
+    <div class="mgrid">
+      ${MAPS.map(m=>`<div class="mcard">
+        <div class="mcard-top">${mapBadge(m.n,'mbadge')}<div class="mn">${m.n}</div></div>
+        <div class="mstats">
+          <div class="mstat"><div class="ml">Убийства</div><div class="mv">${fmt(m.kills)}</div></div>
+          <div class="mstat"><div class="ml">Кил/раунд</div><div class="mv">${m.kpr.toFixed(2)}</div></div>
+          <div class="mstat"><div class="ml">Часы</div><div class="mv">${m.hours>=1?Math.round(m.hours):m.hours.toFixed(1)}</div></div>
+        </div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+/* ===================== router ===================== */
+const VIEWS = {home:vHome, profile:vProfile, matches:vMatches, compare:vCompare, weapons:vWeapons, maps:vMaps};
+const NAV_OF = {home:'home',profile:'profile',matches:'profile',compare:'compare',weapons:'weapons',maps:'maps'};
+
+function route(){
+  const r=(location.hash.replace('#/','')||'home').split('?')[0];
+  const view=VIEWS[r]||vHome;
+  const app=document.getElementById('app');
+  app.innerHTML=view();
+  // active nav
+  const navKey=NAV_OF[r]||'home';
+  document.querySelectorAll('[data-route]').forEach(a=>a.classList.toggle('active',a.dataset.route===navKey));
+  window.scrollTo(0,0);
+  closeDrawer();
+  bindDynamic(r);
+}
+
+function bindDynamic(r){
+  if(r==='profile'){
+    const seg=document.getElementById('seg'), holder=document.getElementById('chartHolder');
+    seg && seg.addEventListener('click',e=>{
+      const b=e.target.closest('button'); if(!b) return;
+      seg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
+      holder.innerHTML=chart(RATING_SERIES[b.dataset.s]);
+    });
+  }
+  if(r==='matches'){
+    const mt=document.getElementById('mtabs');
+    mt && mt.addEventListener('click',e=>{
+      const b=e.target.closest('button'); if(!b) return;
+      matchTab=b.dataset.t; route();
+    });
+  }
+}
+
+/* drawer */
+const drawer=document.getElementById('drawer');
+function openDrawer(){drawer.classList.add('open')}
+function closeDrawer(){drawer.classList.remove('open')}
+document.getElementById('burger').addEventListener('click',openDrawer);
+document.getElementById('drawerClose').addEventListener('click',closeDrawer);
+drawer.addEventListener('click',e=>{if(e.target===drawer)closeDrawer()});
+
+/* live player search via serverless proxy */
+let toastT;
+function toast(msg,ms){
+  let t=document.getElementById('toast');
+  if(!t){t=el('<div id="toast" class="toast"></div>');document.body.appendChild(t);}
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastT); if(ms) toastT=setTimeout(()=>t.classList.remove('show'),ms);
+}
+async function loadPlayer(nick){
+  nick=(nick||'').trim(); if(!nick) return;
+  toast('Загружаю '+nick+'…');
+  try{
+    const r=await fetch('/api/cybershoke?user='+encodeURIComponent(nick));
+    if(!r.ok) throw new Error('код '+r.status);
+    const full=await r.json();
+    if(!full||!full.statistics||!full.cybershoke) throw new Error('игрок не найден');
+    applyRaw(normalize(full));
+    closeDrawer();
+    if((location.hash||'')==='#/profile') route(); else location.hash='#/profile';
+    toast(PLAYER.name+' загружен',1400);
+  }catch(e){ toast('Не удалось: '+e.message,2800); }
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter' && e.target.matches('.search input')){ e.preventDefault(); loadPlayer(e.target.value); }
+});
+
+window.addEventListener('hashchange',route);
+route();
+</script>
+</body>
+</html>
